@@ -1,12 +1,17 @@
 #include <complex>
+#include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <ostream>
-
+#include <map>
 
 #include <cmath>
 
+#include "PhysConstants.hpp"
+
 using namespace std;
+
+PhysConstants consts;
 
 //Gamma function for complex argument G(a+bi) returns |G|**2, a la Lanczos!
 complex<double> Gamma(double a, double b) {
@@ -16,41 +21,42 @@ complex<double> Gamma(double a, double b) {
 		   771.32342877765313, -176.61502916214059, 12.507343278686905,
 		   -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7};
 
-    if(z.real() < 0.5) {
-        return (M_PI / (sin(M_PI*z)*Gamma(1.0-z.real(), z.imag())) );
-    } else {
-        z -= 1.0;
-        x = c[0];
-	
-	for(int i = 1; i < 9; i++)
-	    x+=c[i]/(z+double(i));
-	t = z + gg + 0.5;
-	cG = sqrt(2*M_PI) * pow(t,z+0.5) * exp(-t) * x;
-	return(cG);
-    }
+    if(real(z) < 0.5)
+	z = 1. - z;
+    z -= 1.0;
+    x = c[0];
+    
+    for(int i = 1; i < 9; i++)
+	x+=c[i]/(z+double(i));
+    t = z + gg + 0.5;
+    cG = sqrt(2*M_PI) * pow(t,z+0.5) * exp(-t) * x;
+    return(cG);
 }
 
-//Courtesy of M. G. Bertolli
-//units on w and Fermi in MeV
-//Beta decay goes from 1 to Q
+//Courtesy of M. G. Bertolli - that fucking dick.
+//units on w = MeV and Fermi = unitless
+//Beta decay goes from Q to ~0
 double Fermi(int z, int a, double w) {
-    double alpha = 0.0072973525698, r0 = 1.2;
+    w /= consts.GetConstant("c").GetValue()*consts.GetConstant("hbar").GetValue();
+    double r0 = 1.2e-15; // m
     double R = r0*pow(a, 1./3.);
     double p = sqrt(w*w-1.);
-    double gamma = sqrt(1.-pow(alpha*z,2));
-    double y = alpha*z*w/p;
-    
+    double fineStructure = consts.GetConstant("fineStructure").GetValue();
+    double gamma = sqrt(1.-pow(fineStructure*z,2));
+    double y = fineStructure*z*w/p;
+
     return ( 2*(1.+gamma)*pow(2*p*R, -2*(1.-gamma))*
 	     exp(M_PI*y)*norm(Gamma(gamma,y))/norm(Gamma(2*gamma+1.0,0)) ) ;
 }
 
 int main() {
-    complex<double> a(0.5,0), b(1.5,0), c(2.5,0);
-    cout << setprecision(12) << "G(2.5, 0) = " 
-	 << Gamma(c.real(), c.imag()) << endl;
+    double a = 77;
+    double z = 29;
+    double qbeta = -10.150;
+    double en = 0.269929;
+    double step = 0.01;
 
-    cout << setprecision(12) << "Fermi(119,339,1.2) = " << Fermi(119,339,1.2) << endl;
-	//<< "Fermi(29,73,1.2) = " << Fermi(29,73,1.2) << endl;
+    //for(double i = qbeta+step; i < 0; i += step)
+    //    cout << i << " " << Fermi(z,a,qbeta-i) << endl;
+    cout << en << " " << log10(Fermi(z,a,qbeta+en)) << endl;
 }
-    
-	

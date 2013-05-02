@@ -41,12 +41,13 @@ complex<double> Gamma(const double &a, const double &b) {
 //Courtesy of M. G. Bertolli - that fucking dick. 
 //units on w = MeV and Fermi = unitless
 double CalcFermiFunction(const int &z, const int &a, const double &w) {
+    double energy = w;
     double r0 = 1.2e-15; // m
     double R = r0*pow(a, 1./3.);
     double p = sqrt(w*w-1.);
     double fineStructure = consts.GetConstant("fineStructure").GetValue();
     double gamma = sqrt(1.-pow(fineStructure*z,2));
-    double y = fineStructure*z*w/p;
+    double y = (fineStructure*z*w)/p;
 
     return ( 2*(1.+gamma)*pow(2*p*R, -2*(1.-gamma))*
 	     exp(M_PI*y)*norm(Gamma(gamma,y))/norm(Gamma(2*gamma+1.0,0)) ) ;
@@ -55,30 +56,24 @@ double CalcFermiFunction(const int &z, const int &a, const double &w) {
 double CalcFermiIntegral(void) {
     //Some of the initial parameters
     double a = 76;
-    double z = 30;
-    double qbeta = 10.150;
+    double z = 29;
+    double qbeta = 10.150/(eMass*pow(c,2)); //Starts in MeV to convert
     double step = 0.01;
     
     double integral = 0; 
-    for(double i = 1+step; i < qbeta; i+=step) {
-        double w = (i)/(c*hbar);
-        double fermiFunc = CalcFermiFunction(z,a,w);
+    for(double w = 1+step; w < qbeta; w+=step) {
+        double fermiFunc = CalcFermiFunction(z+1,a,w);
         double pe = sqrt(pow(w,2.0)-1);
-        double diff = pow(qbeta-i,2.0);
+        double diff = pow(qbeta-w,2.0);
 
-        cout << w << " " << fermiFunc << " " << " " << pe << " " 
-             << diff << " " << endl;
-        integral += fermiFunc*pe*i*pow(qbeta-i, 2.0);
+        // cout << w << " " << fermiFunc << " " << " " << pe << " " 
+        //      << diff << " " << endl;
+        integral += fermiFunc*pe*w*diff;
     }
-
-    cout << "Ingegral = " << integral << endl;
     return(integral);
 }
 
 int main() {
-    double en = 0.269929;
-
-    //for(double i = qbeta+step; i < 0; i += step)
-    //    cout << i << " " << Fermi(z,a,qbeta-i) << endl;
-    cout << en << " " << log10(CalcFermiIntegral()) << endl;
+    cout << "f = " << CalcFermiIntegral() << endl 
+         << "log(f) = " << log10(CalcFermiIntegral()) << endl;;
 }

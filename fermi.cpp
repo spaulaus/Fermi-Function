@@ -41,8 +41,6 @@ complex<double> Gamma(const double &a, const double &b) {
 //Courtesy of M. G. Bertolli - that fucking dick. 
 //units on w = MeV and Fermi = unitless
 double CalcFermiFunction(const int &z, const int &a, const double &w) {
-    double energy = w;
-    energy /= c*hbar;
     double r0 = 1.2e-15; // m
     double R = r0*pow(a, 1./3.);
     double p = sqrt(w*w-1.);
@@ -63,18 +61,18 @@ double CalcFermiIntegral(void) {
     
     double integral = 0; 
     for(double i = 1+step; i < qbeta; i+=step) {
-        double fermiFunc = CalcFermiFunction(z,a,-qbeta+i);
-        double pe = sqrt(2*eMass*i);
+        double w = (i)/(c*hbar);
+        double fermiFunc = CalcFermiFunction(z,a,w);
+        double pe = sqrt(pow(w,2.0)-1);
         double diff = pow(qbeta-i,2.0);
 
-        cout << i << " " << fermiFunc << " " << " " << pe << " " 
+        cout << w << " " << fermiFunc << " " << " " << pe << " " 
              << diff << " " << endl;
-        integral += fermiFunc*pe*i*pow(qbeta-i, 2.0); 
+        integral += fermiFunc*pe*i*pow(qbeta-i, 2.0);
     }
 
-    cout << "Ingegral = " << integral << "  1/emass**5 = " << pow(eMass,5.) 
-         << endl;
-    return(integral/pow(eMass,5.));
+    cout << "Ingegral = " << integral << endl;
+    return(integral);
 }
 
 int main() {

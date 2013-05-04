@@ -16,7 +16,7 @@ PhysConstants consts;
 //Some of the useful constants to be used
 double c = consts.GetConstant("c").GetValue(); // m/s
 double hbar = consts.GetConstant("hbar").GetValue()/1e6; // MeV*s
-double em = consts.GetConstant("electronMass").GetValue(); // MeV/c/c
+double me = consts.GetConstant("electronMass").GetValue()/c/c; // MeV/c/c
 
 //Gamma function for complex argument G(a+bi) returns |G|**2, a la Lanczos!
 complex<double> Gamma(const double &a, const double &b) {
@@ -41,16 +41,16 @@ complex<double> Gamma(const double &a, const double &b) {
 //Courtesy of M. G. Bertolli
 //units on w = MeV and Fermi = unitless
 double CalcFermiFunction(const int &z, const int &a, const double &w) {
-    double R = (2.908e-3*pow(a, 1./3.) - 2.437e-3*pow(a, -1./3.));
-    double p = sqrt(w*w-1.); 
+    double R = (2.908e-3*pow(a, 1./3.) - 2.437e-3*pow(a, -1./3.))*(hbar/me/c);
+    double p = sqrt(w*w-pow(me,2.))/c; 
     double fineStructure = consts.GetConstant("fineStructure").GetValue();
     double gamma = sqrt(1.-pow(fineStructure*z,2));
-    double y = (fineStructure*z*w)/p;
+    double y = (fineStructure*z*w)/p/c;
 
     // cout << "Inside F(z,a,w) = " << R << " " << p << " " << gamma << " " << y 
     //      << " " << norm(Gamma(gamma,y)) << " " << norm(Gamma(2*gamma+1.0,0)) << endl;
 
-    return ( 2*(1.+gamma)*pow(2*p*R, -2*(1.-gamma))*
+    return ( 2*(1.+gamma)*pow(2*p*R*hbar/me/me/c/c/c/c, -2*(1.-gamma))*
 	     exp(M_PI*y)*norm(Gamma(gamma,y))/norm(Gamma(2*gamma+1.0,0)) ) ;
 }
 
@@ -58,16 +58,16 @@ double CalcFermiIntegral(void) {
     //The one I'm interested in
     //double a = 77, z = 29, qbeta = 10.28; //77cu; units of MeV
     //From Langanke
-    //double a = 63, z = 27, qbeta = 3.661+0.087; // 63co; units of MeV
+    //double a = 63, z = 27, qbeta = (3.661+0.087)/me/c/c; // 63co; units of MeV
     //From Gove and Martin
-    double a = 120, z = 50, qbeta = 5; // 63co; units of MeV    
+    double a = 120, z = 50, qbeta = 5; // units of MeV    
     double step = 5e-5;
 
     cout << "Qbeta = " << qbeta << endl;
 
     double integral = 0; 
     for(double w = 1+step; w < qbeta; w+=step) {
-        double pe = sqrt(w*w-1);  
+        double pe = sqrt(w*w-pow(me,2.))/c;  
         double diff = pow(qbeta-w,2.0);
         double fermiFunc = CalcFermiFunction(z+1,a,w);
         
@@ -75,7 +75,7 @@ double CalcFermiIntegral(void) {
         //      << diff << " " << endl << endl;
         integral += w*pe*diff*fermiFunc;
     }
-    return(integral);
+    return(integral/me/me/me/me);
 }
 
 int main() {

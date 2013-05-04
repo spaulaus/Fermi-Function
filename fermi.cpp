@@ -14,9 +14,9 @@ using namespace std;
 PhysConstants consts;
 
 //Some of the useful constants to be used
-double c = consts.GetConstant("c").GetValue();
-double hbar = consts.GetConstant("hbar").GetValue()/1e6;
-double eMass = consts.GetConstant("electronMass").GetValue() / (c*c);
+double c = consts.GetConstant("c").GetValue(); // m/s
+double hbar = consts.GetConstant("hbar").GetValue()/1e6; // MeV*s
+double em = consts.GetConstant("electronMass").GetValue(); // MeV/c/c
 
 //Gamma function for complex argument G(a+bi) returns |G|**2, a la Lanczos!
 complex<double> Gamma(const double &a, const double &b) {
@@ -41,34 +41,38 @@ complex<double> Gamma(const double &a, const double &b) {
 //Courtesy of M. G. Bertolli
 //units on w = MeV and Fermi = unitless
 double CalcFermiFunction(const int &z, const int &a, const double &w) {
-    double energy = w; // MeV
-    double r0 = 1.2e-15; // m
-    double R = (r0*pow(a, 1./3.)); // 1/MeV
-    double p = sqrt(energy*energy-1.); // MeV
+    double R = (2.908e-3*pow(a, 1./3.) - 2.437e-3*pow(a, -1./3.));
+    double p = sqrt(w*w-1.); 
     double fineStructure = consts.GetConstant("fineStructure").GetValue();
     double gamma = sqrt(1.-pow(fineStructure*z,2));
-    double y = (fineStructure*z*energy)/p;
+    double y = (fineStructure*z*w)/p;
+
+    // cout << "Inside F(z,a,w) = " << R << " " << p << " " << gamma << " " << y 
+    //      << " " << norm(Gamma(gamma,y)) << " " << norm(Gamma(2*gamma+1.0,0)) << endl;
 
     return ( 2*(1.+gamma)*pow(2*p*R, -2*(1.-gamma))*
 	     exp(M_PI*y)*norm(Gamma(gamma,y))/norm(Gamma(2*gamma+1.0,0)) ) ;
 }
 
-//comes from Langanke
 double CalcFermiIntegral(void) {
-    //Some of the initial parameters
-    double a = 77;
-    double z = 29;
-    double qbeta = 10.28; // units me*c*c 
-    double step = 0.01;
-    
+    //The one I'm interested in
+    //double a = 77, z = 29, qbeta = 10.28; //77cu; units of MeV
+    //From Langanke
+    //double a = 63, z = 27, qbeta = 3.661+0.087; // 63co; units of MeV
+    //From Gove and Martin
+    double a = 120, z = 50, qbeta = 5; // 63co; units of MeV    
+    double step = 5e-5;
+
+    cout << "Qbeta = " << qbeta << endl;
+
     double integral = 0; 
     for(double w = 1+step; w < qbeta; w+=step) {
-        double fermiFunc = CalcFermiFunction(z+1,a,w);
-        double pe = sqrt(w*w-1);  // units me*c
+        double pe = sqrt(w*w-1);  
         double diff = pow(qbeta-w,2.0);
-
-        cout << w << " " << fermiFunc << " " << " " << pe << " " 
-             << diff << " " << endl;
+        double fermiFunc = CalcFermiFunction(z+1,a,w);
+        
+        // cout << w << " " << fermiFunc << " " << " " << pe << " " 
+        //      << diff << " " << endl << endl;
         integral += w*pe*diff*fermiFunc;
     }
     return(integral);
@@ -77,5 +81,6 @@ double CalcFermiIntegral(void) {
 int main() {
     double f = CalcFermiIntegral();
     cout << "f = " << f << endl 
-         << "log(f) = " << log10(f) << endl;;
+         << "log(f) = " << log10(f) << endl
+         << "log(ft) = " << log10(f*27.4) << endl;
 }

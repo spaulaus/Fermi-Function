@@ -122,7 +122,7 @@ double KanteleFermi(const double &z, const double &e) {
             break;
         }
     
-    double y[20];
+    double y[16];
     for(int j = idx; j <= idx+1; j++) {
         y[j] = exp(m[j][2 + g] + 
                    m[j][3 + g] * log10(e) + 

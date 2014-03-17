@@ -115,25 +115,26 @@ double KanteleFermi(const double &z, const double &e) {
     else
         g = 0.;
 
-    int idx = 0;
-    for(int i = 1; i <= 6; i++)
+    int idx;
+    for(int i = 0; i < 8; i++) {
         if( (m[i+1][0] - z) >= 0) {
             idx = i;
             break;
         }
+    }
     
     double y[16];
     for(int j = idx; j <= idx+1; j++) {
-        y[j] = exp(m[j][2 + g] + 
-                   m[j][3 + g] * log10(e) + 
-                   m[j][4 + g] * pow(log10(e),2) + 
-                   m[j][5 + g] * pow(log10(e),3) + 
-                   m[j][6 + g] * pow(log10(e),4) );
+        y[j] = exp(m[j][1 + g] + 
+                   m[j][2 + g] * log(e) + 
+                   m[j][3 + g] * pow(log(e),2) + 
+                   m[j][4 + g] * pow(log(e),3) + 
+                   m[j][5 + g] * pow(log(e),4) );
     }
-    double f = exp(log10(y[idx]) + 
-                   ( z - m[idx][1] ) * 
-                   ( log10(y[idx + 1]) - log10(y[idx]) ) / 
-                   ( m[idx + 1][1] - m[idx][1] ) );
+    double f = exp(log(y[idx]) + 
+                   ( z - m[idx][0] ) * 
+                   ( log(y[idx + 1]) - log(y[idx]) ) / 
+                   ( m[idx + 1][0] - m[idx][0] ) );
     return(f);
 }
 

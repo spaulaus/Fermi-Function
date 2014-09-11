@@ -10,10 +10,6 @@ using namespace std;
 
 PhysConstants consts;
 
-//Some of the useful constants to be used
-// double me = 510.999;
-// double fineStructure = 1./137.;
-
 double me = consts.GetConstant("electronMass").GetValue()*1000; // keV/c/c
 double fineStructure = consts.GetConstant("fineStructure").GetValue();
 
@@ -43,10 +39,10 @@ complex<double> Gamma(const double &a, const double &b) {
     }
 }
 
-double CalcFermiFunction(const int &z, const int &a, const double &w) {
+double FermiFunc(const int &z, const int &a, const double &w) {
     //From Royer, NPA, 807, 105-118 (2008) 
-    double R = 1.1818*pow(a,1/3) -0.089 + 1.5938 * pow(a,-1/3); 
-    //double R = fineStructure*pow(a,1/3) / 2.;
+    //double R = 1.1818*pow(a,1/3) -0.089 + 1.5938 * pow(a,-1/3); 
+    double R = fineStructure*pow(a,1/3) / 2.;
     double p = sqrt(w*w-1); 
     double gamma = sqrt(1.-pow(fineStructure*z,2));
     double y = (fineStructure*z*w)/p;
@@ -64,7 +60,7 @@ int main() {
         if(T > q)
             break;
         else
-            cout << setprecision(10) << p << " " << T << " " 
-                 << CalcFermiFunction(z, a, W)*(p/W) << endl;
+            cout << setprecision(6) << p << " " << T << " " 
+                 << FermiFunc(z, a, W)*(p/W) << endl;
     }
 }
